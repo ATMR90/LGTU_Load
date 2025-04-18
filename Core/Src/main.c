@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "tim.h"
 #include "gpio.h"
@@ -48,7 +49,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint16_t adc_data[2] = {0,};
+float32_t Voltage = 0.0f;
+float32_t Current = 0.0f;
+float32_t Power = 0.0f;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -91,13 +95,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
-
+HAL_ADCEx_Calibration_Start(&hadc1);
+HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_data, 2);
+HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -158,7 +166,11 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	//Voltage = ((80586U * adc_data[1])/100000U)*2.102f;
+	//Current = ((80586U * adc_data[0])/100000U)/2.37f;
+	//Power = (Voltage * Current) / 1000U;
+}
 /* USER CODE END 4 */
 
 /**
